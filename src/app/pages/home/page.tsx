@@ -106,7 +106,6 @@ export default function HomePage() {
               </span>
             ))}
           </div>
-          <p>¡Mantén la racha para desbloquear accesorios exclusivos para PomoCat!</p>
         </article>
       </section>
     </div>

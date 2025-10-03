@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { ReactNode } from "react";
-import styles from "./layout.module.css";
+import styles from "./pages/layout.module.css";
 import { NavLink } from "./nav-link";
 
 const navItems = [

@@ -3,23 +3,23 @@ import styles from "./page.module.css";
 
 const products = [
   {
-    name: "Snacks energéticos",
-    description: "Aumenta la energía de tu gato y obtén +10 minutos de concentración.",
+    name: "Sombrero vaquero",
+    description: "Le da a tu gato un estilo rudo y aventurero del lejano oeste.",
     price: 120,
   },
   {
-    name: "Cama de nube",
-    description: "Descansos más reparadores para ti y tu PomoCat.",
+    name: "collar de oro",
+    description: "Accesorio estético brillante que aporta un aire elegante y lujoso a tu gato.",
     price: 280,
   },
   {
-    name: "Pack de sonidos zen",
-    description: "Relaja tu ambiente con sonidos suaves y enfócate más rápido.",
+    name: "Capa de superhéroe",
+    description: "Accesorio llamativo que da un toque heroico y audaz a tu gato",
     price: 90,
   },
   {
-    name: "Collar de enfoque",
-    description: "Reduce las distracciones y mejora la racha diaria.",
+    name: "Peluca de payaso",
+    description: "Accesorio colorido y divertido que añade un aire cómico a tu gato.",
     price: 180,
   },
 ];
@@ -52,15 +52,6 @@ export default function ShopPage() {
             </div>
           </article>
         ))}
-      </section>
-
-      <section className={styles.bundle}>
-        <strong>Oferta destacada</strong>
-        <p>
-          Adquiere el paquete &quot;Rutina Matutina&quot; y recibe 3 artículos exclusivos para arrancar tus
-          mañanas con energía.
-        </p>
-        <span>Disponible por 450 tomates.</span>
       </section>
     </div>
   );
