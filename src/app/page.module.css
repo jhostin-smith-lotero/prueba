@@ -86,3 +86,10 @@
   font-weight: 600;
   text-decoration: none;
 }
+
+.error {
+  margin-top: 8px;
+  color: #9f1f1f;
+  font-size: 0.95rem;
+  text-align: center;
+}

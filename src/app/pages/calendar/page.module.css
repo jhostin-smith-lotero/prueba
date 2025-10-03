@@ -1,0 +1,124 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #2d3a1a;
+}
+
+.headerControls {
+  display: flex;
+  gap: 12px;
+}
+
+.headerControls button {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #fff;
+  color: #39461c;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(68, 85, 37, 0.1);
+  font-family: inherit;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.calendarCard,
+.sideCard {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 16px 40px rgba(136, 94, 30, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+  text-align: center;
+}
+
+.calendar span {
+  padding: 12px 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(51, 66, 29, 0.08);
+  font-weight: 600;
+  color: #3d4c24;
+}
+
+.calendar span[data-highlight="true"] {
+  background: linear-gradient(135deg, #5fb174, #93d26f);
+  color: white;
+  box-shadow: 0 10px 20px rgba(95, 177, 116, 0.35);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timelineItem {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(68, 85, 37, 0.12);
+}
+
+.timelineItem h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+  color: #2d3a1a;
+}
+
+.timelineItem p {
+  color: rgba(45, 58, 26, 0.75);
+  line-height: 1.4;
+}
+
+.summaryList {
+  display: grid;
+  gap: 12px;
+}
+
+.summaryList li {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 12px 16px;
+  border: 1px solid rgba(68, 85, 37, 0.12);
+}
+
+.summaryList span:first-child {
+  font-weight: 600;
+  color: #31401f;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

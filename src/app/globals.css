@@ -1,24 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Madimi+One&display=swap');
-
-:root {
-  --background: #FFEFD7;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #FFEFD7;
-    --foreground: #171717;
-  }
-}
-
-html,
-body {
-  overflow: hidden;
-  height: 100%;
-
-}
-
+ @import url('https://fonts.googleapis.com/css2?family=Madimi+One&display=swap');
+ 
+ :root {
+   --background: #FFEFD7;
+   --foreground: #171717;
+ }
+ 
+ @media (prefers-color-scheme: dark) {
+   :root {
+     --background: #FFEFD7;
+     --foreground: #171717;
+   }
+ }
+ 
 body {
   color: var(--foreground);
   background: var(--background);
