@@ -1,28 +1,31 @@
 import Me from "../auth/me.api";
 
+import type { Language } from "@/context/languageContext";
+
 type Settings = {
-    _id: string;
-    userId: string;
-    musicVolume: number;
-    sfxVolume: number;
-    lenguage: "es" | "en";
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-}
+  _id: string;
+  userId: string;
+  musicVolume: number;
+  sfxVolume: number;
+  language: Language;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
 
+export default async function getSettings(userId?: string | null): Promise<Settings | null> {
+  const existingUserId = userId ?? (await Me())?._id ?? null;
+  if (!existingUserId) {
+    return null;
+  }
 
-export default async function getSettings() {
-  const user = await Me();
-
-    if (!user) throw new Error("Usuario no autenticado");
-    const userId = user._id;
-
-  const res = await fetch(`http://localhost:4000/settings/user/${userId}`, {
+  const res = await fetch(`http://localhost:4000/settings/user/${existingUserId}`, {
     cache: "no-store",
   });
   if (!res.ok) {
-    throw new Error("Failed to fetch settings");
+    return null;
   }
-  return res.json() as Promise<Settings>;
+
+  const data = await res.json();
+  return (data ?? null) as Settings | null;
 }

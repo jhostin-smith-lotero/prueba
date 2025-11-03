@@ -29,8 +29,25 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
 
   const { translations } = useLanguage();
   const drawerTranslations = translations.shop.drawer;
+  const catalog = translations.shop.catalog;
   type DrawerMessageKey = keyof typeof drawerTranslations.messages;
   const [messageKey, setMessageKey] = useState<DrawerMessageKey | null>(null);
+
+  const localizeName = (value: string) => {
+    const key = value.toLowerCase();
+    return catalog.names[key] ?? value;
+  };
+
+  const localizeType = (value: string) => {
+    const key = value.toLowerCase();
+    return catalog.types[key] ?? value;
+  };
+
+  const localizeQuality = (value?: string) => {
+    if (!value) return undefined;
+    const key = value.toLowerCase();
+    return catalog.qualities[key] ?? value;
+  };
 
   const messageKeys = useMemo(() => {
     return new Set(Object.keys(drawerTranslations.messages) as DrawerMessageKey[]);
@@ -141,6 +158,9 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
     : "/sprites/placeholder.svg";
 
   const blocked = !owned && !!item && userCoins < item.price;
+  const displayName = item ? localizeName(item.name) : null;
+  const displayType = item ? localizeType(item.type) : null;
+  const displayQuality = item?.itemQuality ? localizeQuality(item.itemQuality) : null;
 
   return (
     <div className={styles.drawerBackdrop} onClick={onClose}>
@@ -152,7 +172,7 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
         ) : (
           <>
             <header style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12}}>
-              <h2 style={{fontSize:"1.25rem", fontWeight:600}}>{item.name}</h2>
+              <h2 style={{fontSize:"1.25rem", fontWeight:600}}>{displayName}</h2>
               <div style={{opacity:.8}}>{drawerTranslations.yourCoinsLabel}: {userCoins}</div>
             </header>
 
@@ -160,7 +180,7 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
               <div className={styles.imgFrame}>
                 <Image 
                 src={src} 
-                alt={item.name} 
+                alt={displayName ?? item.name} 
                 fill
                 sizes="220px"
                 className={styles.itemImg}
@@ -169,8 +189,10 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
               </div>
 
               <div style={{display:"grid", gap:8}}>
-                <p><strong>{drawerTranslations.typeLabel}:</strong> {item.type}</p>
-                {item.itemQuality && <p><strong>{drawerTranslations.qualityLabel}:</strong> {item.itemQuality}</p>}
+                <p><strong>{drawerTranslations.typeLabel}:</strong> {displayType}</p>
+                {displayQuality && (
+                  <p><strong>{drawerTranslations.qualityLabel}:</strong> {displayQuality}</p>
+                )}
                 <p><strong>{drawerTranslations.priceLabel}:</strong> {item.price} 🍅</p>
 
                 {blocked && <p style={{color:"#f55"}}>{drawerTranslations.insufficientCoins}</p>}

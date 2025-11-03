@@ -35,8 +35,14 @@ export default function CatWithPadClient(
   const { translations } = useLanguage();
   const shop = translations.shop;
   const resolvedAlt = alt ?? shop.catAlt;
-  const hatAlt = hat?.name || shop.hatFallback;
-  const accessoryAlt = accessory?.name || shop.accessoryFallback;
+  const names = shop.catalog.names;
+  const localizeName = (value?: string) => {
+    if (!value) return undefined;
+    const key = value.toLowerCase();
+    return names[key] ?? value;
+  };
+  const hatAlt = localizeName(hat?.name) ?? shop.hatFallback;
+  const accessoryAlt = localizeName(accessory?.name) ?? shop.accessoryFallback;
 
   const scale = size / BASE;
 
