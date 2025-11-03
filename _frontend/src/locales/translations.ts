@@ -66,6 +66,12 @@ type SettingsTranslations = {
     caption: string;
     options: Record<Language, string>;
   };
+  session: {
+    title: string;
+    caption: string;
+    logout: string;
+    loggingOut: string;
+  };
   loadError: string;
 };
 
@@ -175,6 +181,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
           es: "Espa\u00F1ol",
           en: "Ingl\u00E9s",
         },
+      },
+      session: {
+        title: "Sesi\u00F3n",
+        caption: "Cierra tu cuenta para cambiar de usuario.",
+        logout: "Cerrar sesi\u00F3n",
+        loggingOut: "Cerrando sesi\u00F3n...",
       },
       loadError: "Error al cargar la p\u00E1gina de configuraci\u00F3n",
     },
@@ -337,6 +349,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
           es: "Spanish",
           en: "English",
         },
+      },
+      session: {
+        title: "Session",
+        caption: "Sign out of your account to switch users.",
+        logout: "Log out",
+        loggingOut: "Logging out...",
       },
       loadError: "Error loading the settings page",
     },

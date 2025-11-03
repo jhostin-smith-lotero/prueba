@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import styles from "./page.module.css";
 import { useSound } from "@/context/soundContext";
@@ -27,6 +28,7 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
   const { language, setLanguage, translations } = useLanguage();
   const t = translations.settings;
   const navigation = translations.common.navigation;
+  const router = useRouter();
 
   const [volumes, setVolumes] = useState<Record<VolumeKey, number>>({
     music: propSetVolume ?? 60,
@@ -37,6 +39,8 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
     music: true,
     sfx: true,
   });
+
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const applyVolumeChanges = useCallback((key: VolumeKey, value: number) => {
     if (key === "sfx") setSfxVolume(value);
@@ -80,6 +84,29 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
     return SUPPORTED_LANGUAGES.map((id) => ({ id, label: t.language.options[id] }));
   }, [t.language.options]);
 
+  const handleLogout = useCallback(async () => {
+    setLoggingOut(true);
+    try {
+      try {
+        await fetch("http://localhost:4000/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch {}
+
+      try {
+        const expiry = new Date(0).toUTCString();
+        document.cookie = `access_token=; expires=${expiry}; path=/; SameSite=Lax`;
+      } catch {}
+
+      try {
+        window.localStorage.removeItem("tomato-language");
+      } catch {}
+    } finally {
+      router.replace("/");
+      router.refresh();
+    }
+  }, [router]);
 
   return (
     <main className={styles.page}>
@@ -209,6 +236,21 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
               </button>
             ))}
           </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}>
+            <h2>{t.session.title}</h2>
+            <span className={styles.sectionCaption}>{t.session.caption}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.logoutButton}
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            {loggingOut ? t.session.loggingOut : t.session.logout}
+          </button>
         </section>
       </div>
     </main>
