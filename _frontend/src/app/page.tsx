@@ -4,7 +4,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { LoginForm } from "@/components/auth/login-form";
 
-export default async function Home() {
+export default function Home() {
   return (
     <div className={styles.container}>
       <div className={styles.logo}>

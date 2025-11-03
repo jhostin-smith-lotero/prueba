@@ -1,16 +1,17 @@
 "use client";
-import { useId, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import styles from "./MinutesSlider.module.css";
 
 type Props = {
-  id?: string
+  id?: string;
   min?: number;
   max?: number;
   step?: number;
   value: number;
   onChange: (v: number) => void;
-  label?: string;
+  label: string;
+  ariaLabel?: string;
 };
 
 export default function MinutesSlider({
@@ -20,7 +21,8 @@ export default function MinutesSlider({
   step = 5,
   value,
   onChange,
-  label = "estudio",
+  label,
+  ariaLabel,
 }: Props) {
   const percent = useMemo(() => ((value - min) * 100) / (max - min), [value, min, max]);
   const safeId = id ?? `slider-${label.replace(/\s+/g, "-").toLowerCase()}`;
@@ -34,15 +36,15 @@ export default function MinutesSlider({
 
   return (
     <div className={styles.sliderControl}>
-      <label htmlFor={id} className={styles.label}>
-        Minutes of {label}: <output className={styles.value}>{value}</output>
+      <label htmlFor={safeId} className={styles.label}>
+        {label}: <output className={styles.value}>{value}</output>
       </label>
 
       <div className={styles.trackWrap}>
         <input
-          id={id}
+          id={safeId}
           type="range"
-          aria-label={`Minutes of ${label}`}
+          aria-label={ariaLabel ?? label}
           min={min}
           max={max}
           step={step}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { useLanguage } from "@/context/languageContext";
 
 type Item = {
   _id: string;
@@ -18,50 +19,76 @@ type Props = {
   itemId: string;
   onClose: () => void;
   userCoins: number;
-  userId: string
+  userId: string;
 };
 
 export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }: Props) {
   const [item, setItem] = useState<Item | null>(null);
   const [owned, setOwned] = useState<boolean>(false);
-  const [msg, setMsg] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  
+
+  const { translations } = useLanguage();
+  const drawerTranslations = translations.shop.drawer;
+  type DrawerMessageKey = keyof typeof drawerTranslations.messages;
+  const [messageKey, setMessageKey] = useState<DrawerMessageKey | null>(null);
+
+  const messageKeys = useMemo(() => {
+    return new Set(Object.keys(drawerTranslations.messages) as DrawerMessageKey[]);
+  }, [drawerTranslations.messages]);
+
+  const messageText = useMemo(() => {
+    return messageKey ? drawerTranslations.messages[messageKey] : null;
+  }, [drawerTranslations.messages, messageKey]);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const resItem = await fetch(`http://localhost:4000/items/${itemId}`, { credentials:"include", cache:"no-store" });
-        if (!resItem.ok) throw new Error("Error cargando item");
+        const resItem = await fetch(`http://localhost:4000/items/${itemId}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!resItem.ok) {
+          if (alive) setMessageKey("loadError");
+          return;
+        }
         const it: Item = await resItem.json();
 
-        const inventory = await fetch(
-            `http://localhost:4000/inventory/user/${userId}/item/${it._id}`, {
-                method: "GET",
-                credentials:"include",
-                cache: "no-store"
-            }
-        )
+        const inventory = await fetch(`http://localhost:4000/inventory/user/${userId}/item/${it._id}`, {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
 
         if (!alive) return;
+        if (!inventory.ok && inventory.status !== 404) {
+          setItem(it);
+          setOwned(false);
+          setMessageKey("detailError");
+          return;
+        }
+
         setItem(it);
-        setOwned(inventory.ok)
-      } catch (e: any) {
+        setOwned(inventory.ok);
+        setMessageKey(null);
+      } catch {
         if (!alive) return;
-        setMsg(e?.message ?? "Error cargando detalle");
+        setMessageKey("loadError");
       }
     })();
     return () => { alive = false; };
-  }, [itemId]);
+  }, [itemId, userId]);
 
 
   const action = owned ? "equip" : "buy";
   const onAction = () => {
-    setMsg(null);
+    setMessageKey(null);
     startTransition(async () => {
       try {
-        if (!item) throw new Error("Falta información del ítem");
+        if (!item) {
+          setMessageKey("missingItem");
+          return;
+        }
 
         if (action === "buy") {
           const res = await fetch(`http://localhost:4000/shop/purchase/${item._id}/${userId}`, {
@@ -69,9 +96,9 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
             headers: { "Content-Type": "application/json" },
             credentials: "include",
           });
-          if (!res.ok) throw new Error("No se pudo comprar");
+          if (!res.ok) throw new Error("purchaseFailed");
           setOwned(true);
-          setMsg("¡Comprado! Ahora puedes equiparlo.");
+          setMessageKey("purchased");
           return;
         }
 
@@ -96,12 +123,15 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
         });
 
         if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(text || "No se pudo equipar");
+          throw new Error("equipFailed");
         }
-        setMsg("¡Equipado!");
-      } catch (e: any) {
-        setMsg(e?.message ?? "Ocurrió un error");
+        setMessageKey("equipped");
+      } catch (error: unknown) {
+        if (error instanceof Error && messageKeys.has(error.message as DrawerMessageKey)) {
+          setMessageKey(error.message as DrawerMessageKey);
+          return;
+        }
+        setMessageKey(action === "buy" ? "purchaseFailed" : "equipFailed");
       }
     });
   };
@@ -115,15 +145,15 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
   return (
     <div className={styles.drawerBackdrop} onClick={onClose}>
       <div className={styles.drawerCard} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar">✕</button>
+        <button className={styles.closeBtn} onClick={onClose} aria-label={drawerTranslations.closeAria}>✕</button>
 
         {!item ? (
-          <p>Cargando…</p>
+          <p>{drawerTranslations.loading}</p>
         ) : (
           <>
             <header style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12}}>
               <h2 style={{fontSize:"1.25rem", fontWeight:600}}>{item.name}</h2>
-              <div style={{opacity:.8}}>Tus monedas: {userCoins}</div>
+              <div style={{opacity:.8}}>{drawerTranslations.yourCoinsLabel}: {userCoins}</div>
             </header>
 
             <section style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:16}}>
@@ -139,11 +169,11 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
               </div>
 
               <div style={{display:"grid", gap:8}}>
-                <p><strong>Tipo:</strong> {item.type}</p>
-                {item.itemQuality && <p><strong>Calidad:</strong> {item.itemQuality}</p>}
-                <p><strong>Precio:</strong> {item.price} 🍅</p>
+                <p><strong>{drawerTranslations.typeLabel}:</strong> {item.type}</p>
+                {item.itemQuality && <p><strong>{drawerTranslations.qualityLabel}:</strong> {item.itemQuality}</p>}
+                <p><strong>{drawerTranslations.priceLabel}:</strong> {item.price} 🍅</p>
 
-                {blocked && <p style={{color:"#f55"}}>No tienes suficientes monedas.</p>}
+                {blocked && <p style={{color:"#f55"}}>{drawerTranslations.insufficientCoins}</p>}
 
                 <button
                   onClick={onAction}
@@ -152,10 +182,14 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
                     background: owned ? "#16a34a" : "#2563eb",
                     color:"#fff", cursor: pending ? "wait" : "pointer", opacity: pending ? .7 : 1 }}
                 >
-                  {pending ? (owned ? "Equipando…" : "Comprando…") : (owned ? "Equipar" : `Comprar por ${item.price} 🍅`)}
+                  {pending
+                    ? (owned ? drawerTranslations.equipBusyLabel : drawerTranslations.buyBusyLabel)
+                    : (owned
+                        ? drawerTranslations.equipLabel
+                        : drawerTranslations.buyLabel.replace("{price}", item.price.toString()))}
                 </button>
 
-                {msg && <p style={{marginTop:6}}>{msg}</p>}
+                {messageText && <p style={{marginTop:6}}>{messageText}</p>}
               </div>
             </section>
           </>
@@ -164,3 +198,5 @@ export default function ItemDetailDrawer({ itemId, onClose, userCoins, userId }:
     </div>
   );
 }
+
+

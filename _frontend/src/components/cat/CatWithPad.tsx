@@ -1,7 +1,10 @@
 "use client";
+"use client";
+
 import Image from "next/image";
 import styles from "./CatWithPad.module.css";
 import { CSSProperties } from "react";
+import { useLanguage } from "@/context/languageContext";
 
 
 type Props = { src: string; alt?: string; size?: number };
@@ -22,29 +25,40 @@ type Item = {
 
 const BASE = 360;
 
+type PositionVars = CSSProperties & Record<"--x" | "--y", string>;
+type SizeVars = CSSProperties & Record<"--size", string>;
+
 
 export default function CatWithPadClient(
-  { src, alt = "cat", size = 330, hat, accessory }: Props & { hat?: Item; accessory?: Item }
+  { src, alt, size = 330, hat, accessory }: Props & { hat?: Item; accessory?: Item }
 ) {
+  const { translations } = useLanguage();
+  const shop = translations.shop;
+  const resolvedAlt = alt ?? shop.catAlt;
+  const hatAlt = hat?.name || shop.hatFallback;
+  const accessoryAlt = accessory?.name || shop.accessoryFallback;
+
   const scale = size / BASE;
 
-  const hatStyle: CSSProperties = {
-    ["--x" as any]: `${(hat?.posX ?? 0) * scale}px`,
-    ["--y" as any]: `${(hat?.posY ?? 0) * scale}px`,
+  const hatStyle: PositionVars = {
+    "--x": `${(hat?.posX ?? 0) * scale}px`,
+    "--y": `${(hat?.posY ?? 0) * scale}px`,
   };
 
-  const accStyle: CSSProperties = {
-    ["--x" as any]: `${(accessory?.posX ?? 0) * scale}px`,
-    ["--y" as any]: `${(accessory?.posY ?? 0) * scale}px`,
+  const accStyle: PositionVars = {
+    "--x": `${(accessory?.posX ?? 0) * scale}px`,
+    "--y": `${(accessory?.posY ?? 0) * scale}px`,
   };
+
+  const wrapStyle: SizeVars = { "--size": `${size}px` };
 
   return (
     <div className={styles.cat}>
-      <div className={styles.catWrap} style={{ ["--size" as any]: `${size}px` }}>
+      <div className={styles.catWrap} style={wrapStyle}>
         <div className={styles.catHat} style={hatStyle}>
           <Image
             src={hat?.sprite_path || "/items/empty.png"}
-            alt={hat?.name || "hat"}
+            alt={hatAlt}
             priority
             className={styles.itemImg}
             width={(hat?.width ?? 0) * scale}
@@ -56,7 +70,7 @@ export default function CatWithPadClient(
         <div className={styles.catAccessory} style={accStyle}>
           <Image
             src={accessory?.sprite_path || "/items/empty.png"}
-            alt={accessory?.name || "accessory"}
+            alt={accessoryAlt}
             priority
             className={styles.itemImg}
             width={(accessory?.width ?? 0) * scale}
@@ -67,7 +81,7 @@ export default function CatWithPadClient(
 
         <Image
           src={src}
-          alt={alt}
+          alt={resolvedAlt}
           fill
           priority
           className={styles.catImg}

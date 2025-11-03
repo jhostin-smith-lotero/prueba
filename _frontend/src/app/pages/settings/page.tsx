@@ -2,6 +2,7 @@ import  Me from "@/components/auth/me.api";
 import SettingsClient from "./SettingsClient";
 import { SoundProvider } from "@/context/soundContext";
 import getSettings from "@/components/settings/settings.api";
+import SettingsErrorState from "./SettingsErrorState";
 
 export default async function Page() {
   const user = await Me().catch(() => null);
@@ -9,7 +10,7 @@ export default async function Page() {
 
 
   if (!user || !settings) {
-    return <div>Error loading page</div>;
+    return <SettingsErrorState />;
   }
 
   return (

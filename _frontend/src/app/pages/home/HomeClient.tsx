@@ -8,6 +8,7 @@ import MinutesSlider from "@/components/Sliders/MinuteSlider";
 import CatWithPadClient from "@/components/cat/CatWithPad";
 import { useSound } from "@/context/soundContext";
 import type { ItemDto } from "@/components/cat/cat.api";
+import { useLanguage } from "@/context/languageContext";
 
 type Props = { catSrc: string; coins_user: string, userId: string, hat?: ItemDto, accessory?: ItemDto  };
 type Phase = "study" | "rest";
@@ -24,6 +25,9 @@ export const formatMMSS = (msv: number) => {
 export default function HomeClient({ catSrc, coins_user, userId, hat, accessory }: Props) {
   const sfx = useSound().sfx;
   const music = useSound().music;
+  const { translations } = useLanguage();
+  const nav = translations.common.navigation;
+  const home = translations.home;
 
   const [coins, setCoins] = useState<number>(parseInt(coins_user, 10) || 0);
 
@@ -64,7 +68,7 @@ export default function HomeClient({ catSrc, coins_user, userId, hat, accessory 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ coins: 10 + loop * 50 }),
       });
-    } catch (_) {}
+    } catch {}
   }, [userId, loop]);
 
   const removeTaskAndAddCoins = (index: number) => {
@@ -120,7 +124,7 @@ export default function HomeClient({ catSrc, coins_user, userId, hat, accessory 
       endAtRef.current = Date.now() + duration;
       setTimeLeft(duration);
     },
-    [studyms, restms]
+    [restms, sfx.purring, studyms]
   );
 
   const tick = useCallback(() => {
@@ -234,52 +238,52 @@ export default function HomeClient({ catSrc, coins_user, userId, hat, accessory 
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.coins}>
-          <Image src="/coin.png" alt="coin" className={styles.pomos} width={40} height={40} />
+          <Image src="/coin.png" alt={translations.common.coinAlt} className={styles.pomos} width={40} height={40} />
           <p>{coins}</p>
         </div>
 
         <nav className={styles.navigator}>
           <Link href="/pages/home">
-            <Image 
-            src="/icons/home.svg" 
-            alt="home" 
-            width={100} 
-            height={100} 
-            className={styles.icon} 
+            <Image
+              src="/icons/home.svg"
+            alt={nav.home}
+              width={100}
+              height={100}
+              className={styles.icon}
             />
           </Link>
           <Link href="/pages/calendar">
-            <Image 
-            src="/icons/calendar-regular-full.svg" 
-            alt="calendar" 
-            width={5} 
-            height={5} 
-            className={styles.icon} 
+            <Image
+              src="/icons/calendar-regular-full.svg"
+            alt={nav.calendar}
+              width={5}
+              height={5}
+              className={styles.icon}
             />
           </Link>
           <Link href="/pages/shop">
-            <Image 
-            src="/icons/shopping-cart.svg" 
-            alt="shop" 
-            width={5} 
-            height={5} 
-            className={styles.icon} 
+            <Image
+              src="/icons/shopping-cart.svg"
+            alt={nav.shop}
+              width={5}
+              height={5}
+              className={styles.icon}
             />
           </Link>
           <Link href="/pages/settings">
-            <Image 
-            src="/icons/settings.svg" 
-            alt="settings" 
-            width={5} 
-            height={5} 
-            className={styles.icon} />
+            <Image
+              src="/icons/settings.svg"
+            alt={nav.settings}
+              width={5}
+              height={5}
+              className={styles.icon} />
           </Link>
         </nav>
       </header>
 
       <main className={styles.main}>
         <div className={styles.cat}>
-          <CatWithPadClient src={catSrc} size={330} hat={hat} accessory={accessory}/>
+          <CatWithPadClient src={catSrc} size={330} hat={hat} accessory={accessory} alt={home.catAlt} />
         </div>
 
         <section className={styles.right}>
@@ -287,48 +291,54 @@ export default function HomeClient({ catSrc, coins_user, userId, hat, accessory 
             <div className={styles.controller}>
               <div className={styles.timmers}>
                 <div className={`${styles.session} ${session ? styles.open : ""}`}>
-                  <h1>{phase == "study" ? "Study" : "Rest"}</h1>
+                  <h1>{phase === "study" ? home.session.study : home.session.rest}</h1>
                   <h2>{formatMMSS(timeLeft)}</h2>
                 </div>
 
                 <div className={`${styles.inside_timmers} ${session ? styles.close : ""}`}>
-                  <h1>Study</h1>
+                  <h1>{home.session.study}</h1>
                   <h2>{study} min</h2>
                 </div>
 
                 <div className={`${styles.inside_timmers} ${session ? styles.close : ""}`}>
-                  <h1>Rest</h1>
+                  <h1>{home.session.rest}</h1>
                   <h2>{rest} min</h2>
                 </div>
               </div>
 
               <form className={`${styles.buttons} ${session ? styles.close : ""}`}>
                 <button type="button" className={styles.timeBtn} onClick={Short}>
-                  Short
+                  {home.quickDurations.short}
                 </button>
                 <button type="button" className={styles.timeBtn} onClick={Medium}>
-                  Medium
+                  {home.quickDurations.medium}
                 </button>
                 <button type="button" className={styles.timeBtn} onClick={Long}>
-                  Long
+                  {home.quickDurations.long}
                 </button>
               </form>
 
               <button className={`${styles.timeBtn} ${session ? styles.open : ""}`} onClick={handleStart}>
-                <Image src="/icons/play-solid-full.svg" alt="play" width={20} height={20} className={styles.playIcon} />
+                <Image
+                  src="/icons/play-solid-full.svg"
+                  alt={home.controls.start}
+                  width={20}
+                  height={20}
+                  className={styles.playIcon}
+                />
               </button>
 
               <div className={`${styles.buttonsWhenTimmer} ${session ? styles.open : ""}`}>
                 <button className={`${styles.stopButton} ${session ? styles.open : ""}`} onClick={handleStop}>
-                  <Image src="/icons/stop.svg" alt="stop" width={20} height={20} />
+                  <Image src="/icons/stop.svg" alt={home.controls.stop} width={20} height={20} />
                 </button>
 
                 <button className={`${styles.stopButton} ${session && !isPause ? styles.open : ""}`} onClick={handlePause}>
-                  <Image src="/icons/pause.svg" alt="stop" width={20} height={20} />
+                  <Image src="/icons/pause.svg" alt={home.controls.pause} width={20} height={20} />
                 </button>
 
                 <button className={`${styles.stopButton} ${session && isPause ? styles.open : ""}`} onClick={handleResume}>
-                  <Image src="/icons/play-solid-full.svg" alt="stop" width={20} height={20} />
+                  <Image src="/icons/play-solid-full.svg" alt={home.controls.resume} width={20} height={20} />
                 </button>
               </div>
             </div>
@@ -341,29 +351,58 @@ export default function HomeClient({ catSrc, coins_user, userId, hat, accessory 
                 onClick={() => setVisible((v) => !v)}
                 className={styles.timeBtn}
               >
-                <Image src="/icons/settings.svg" alt="settings" width={20} height={20} className={styles.addIcon} />
+                <Image
+                  src="/icons/settings.svg"
+                  alt={home.controls.openSettings}
+                  width={20}
+                  height={20}
+                  className={styles.addIcon}
+                />
               </button>
             </div>
 
             <div id="settings-panel" className={`${styles.insideSettings} ${visible && !session ? styles.open : ""}`}>
               <div className={styles.closeBtn}>
                 <button type="button" onClick={() => setVisible((v) => !v)} className={styles.closebtnS}>
-                  <Image src="/icons/close.svg" alt="close" width={20} height={20} />
+                  <Image src="/icons/close.svg" alt={home.controls.closeSettings} width={20} height={20} />
                 </button>
               </div>
 
               <div className={styles.settingsControl}>
-                <MinutesSlider id="study-slyder" min={1} max={120} step={1} label="study" value={study} onChange={setStudy} />
-                <MinutesSlider id="rest-slyder" min={1} max={120} step={1} label="rest" value={rest} onChange={setRest} />
+                <MinutesSlider
+                  id="study-slyder"
+                  min={1}
+                  max={120}
+                  step={1}
+                  label={home.sliders.studyLabel}
+                  ariaLabel={home.sliders.studyAria}
+                  value={study}
+                  onChange={setStudy}
+                />
+                <MinutesSlider
+                  id="rest-slyder"
+                  min={1}
+                  max={120}
+                  step={1}
+                  label={home.sliders.restLabel}
+                  ariaLabel={home.sliders.restAria}
+                  value={rest}
+                  onChange={setRest}
+                />
               </div>
             </div>
 
             <div className={`${styles.secondCard} ${session ? styles.open : ""}`}>
-              <h2>Tasks</h2>
+              <h2>{home.tasks.title}</h2>
 
               <div className={styles.taskInput}>
-                <input type="text" placeholder="Task name" value={newTask} onChange={(e) => setNewTask(e.target.value)} />
-                <button onClick={() => addTask(newTask)}>Add</button>
+                <input
+                  type="text"
+                  placeholder={home.tasks.placeholder}
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                />
+                <button onClick={() => addTask(newTask)}>{home.tasks.add}</button>
               </div>
 
               <ul>

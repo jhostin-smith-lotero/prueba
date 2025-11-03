@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import styles from "./page.module.css";
 import { useSound } from "@/context/soundContext";
+import { SUPPORTED_LANGUAGES, useLanguage } from "@/context/languageContext";
 
 type VolumeKey = "music" | "sfx";
 
@@ -15,20 +16,17 @@ type Props = {
   propSetVfx?: number;
 };
 
-type LanguageOption = { id: "es" | "en"; label: string };
+const VOLUME_KEYS: VolumeKey[] = ["music", "sfx"];
 
-const VOLUME_CONTROLS: { key: VolumeKey; label: string; hint: string }[] = [
-  { key: "music", label: "Música", hint: "Melodías de fondo durante tus sesiones." },
-  { key: "sfx", label: "SFX", hint: "Efectos de sonido." },
-];
+type SliderCSSVariables = CSSProperties &
+  Record<"--value" | "--track-active" | "--track-rest" | "--thumb-color", string>;
 
-const LANGUAGES: LanguageOption[] = [
-  { id: "es", label: "Español" },
-  { id: "en", label: "English" },
-];
 
 export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, userId }: Props) {
   const { setVolumePct: setVolume, setSfxVolumePct: setSfxVolume } = useSound();
+  const { language, setLanguage, translations } = useLanguage();
+  const t = translations.settings;
+  const navigation = translations.common.navigation;
 
   const [volumes, setVolumes] = useState<Record<VolumeKey, number>>({
     music: propSetVolume ?? 60,
@@ -39,8 +37,6 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
     music: true,
     sfx: true,
   });
-
-  const [language, setLanguage] = useState<LanguageOption["id"]>("es");
 
   const applyVolumeChanges = useCallback((key: VolumeKey, value: number) => {
     if (key === "sfx") setSfxVolume(value);
@@ -62,7 +58,7 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
         }),
       });
     } catch {}
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (firstRenderRef.current) {
@@ -80,11 +76,16 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
     };
   }, [volumes, volumeEnabled, persist]);
 
+  const languageOptions = useMemo(() => {
+    return SUPPORTED_LANGUAGES.map((id) => ({ id, label: t.language.options[id] }));
+  }, [t.language.options]);
+
+
   return (
     <main className={styles.page}>
       <header className={styles.topBar}>
         <div className={styles.coins}>
-          <Image src="/coin.png" alt="coin" className={styles.pomos} width={20} height={20} />
+          <Image src="/coin.png" alt={t.navigation.coinAlt} className={styles.pomos} width={20} height={20} />
           <p>{userCoins}</p>
         </div>
 
@@ -93,33 +94,47 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
             <Image src="/icons/home.svg" alt="home" width={5} height={5} className={styles.icon} />
           </Link>
           <Link href="/pages/calendar">
-            <Image src="/icons/calendar-regular-full.svg" alt="calendar" width={5} height={5} className={styles.icon} />
+            <Image
+              src="/icons/calendar-regular-full.svg"
+              alt={navigation.calendar}
+              width={5}
+              height={5}
+              className={styles.icon}
+            />
           </Link>
           <Link href="/pages/shop">
-            <Image src="/icons/shopping-cart.svg" alt="shop" width={5} height={5} className={styles.icon} />
+            <Image src="/icons/shopping-cart.svg" alt={navigation.shop} width={5} height={5} className={styles.icon} />
           </Link>
           <Link href="/pages/settings">
-            <Image src="/icons/settings.svg" alt="settings" width={5} height={5} className={styles.icon} />
+            <Image src="/icons/settings.svg" alt={navigation.settings} width={5} height={5} className={styles.icon} />
           </Link>
         </nav>
       </header>
 
       <div className={styles.panel}>
         <header className={styles.header}>
-          <h1>Configuración</h1>
-          <p>Personaliza la forma en que la app suena y te acompaña.</p>
+          <h1>{t.header.title}</h1>
+          <p>{t.header.subtitle}</p>
         </header>
 
         <section className={styles.section}>
           <div className={styles.sectionHeading}>
-            <h2>Audio</h2>
-            <span className={styles.sectionCaption}>Ajusta cada pista según tu preferencia.</span>
+            <h2>{t.audio.title}</h2>
+            <span className={styles.sectionCaption}>{t.audio.caption}</span>
           </div>
 
           <div className={styles.sliderList}>
-            {VOLUME_CONTROLS.map(({ key, label, hint }) => {
+            {VOLUME_KEYS.map((key) => {
+              const { label, hint } = t.audio.controls[key];
               const enabled = volumeEnabled[key];
               const value = volumes[key];
+
+              const sliderStyle: SliderCSSVariables = {
+                "--value": `${value}%`,
+                "--track-active": enabled ? "#34d399" : "#cbd5f5",
+                "--track-rest": enabled ? "#d1fae5" : "#e2e8f0",
+                "--thumb-color": enabled ? "#047857" : "#94a3b8",
+              };
 
               return (
                 <div key={key} className={styles.sliderItem} data-enabled={enabled}>
@@ -141,14 +156,7 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
                         setVolumes((prev) => ({ ...prev, [key]: next }));
                         applyVolumeChanges(key, enabled ? next : 0);
                       }}
-                      style={
-                        {
-                          ["--value" as any]: `${value}%`,
-                          ["--track-active" as any]: enabled ? "#34d399" : "#cbd5f5",
-                          ["--track-rest" as any]: enabled ? "#d1fae5" : "#e2e8f0",
-                          ["--thumb-color" as any]: enabled ? "#047857" : "#94a3b8",
-                        } as CSSProperties
-                      }
+                      style={sliderStyle}
                     />
                   </div>
 
@@ -169,7 +177,9 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
                         });
                       }}
                     >
-                      <span className={styles.srOnly}>{enabled ? "Desactivar" : "Activar"} {label}</span>
+                      <span className={styles.srOnly}>
+                        {enabled ? t.audio.toggleDisable : t.audio.toggleEnable} {label}
+                      </span>
                       <span aria-hidden className={styles.sliderToggleTrack}>
                         <span className={styles.sliderToggleThumb} />
                       </span>
@@ -183,11 +193,11 @@ export default function SettingsPage({ userCoins, propSetVolume, propSetVfx, use
 
         <section className={styles.section}>
           <div className={styles.sectionHeading}>
-            <h2>Idioma</h2>
-            <span className={styles.sectionCaption}>Selecciona cómo se muestran los textos.</span>
+            <h2>{t.language.title}</h2>
+            <span className={styles.sectionCaption}>{t.language.caption}</span>
           </div>
           <div className={styles.languageList}>
-            {LANGUAGES.map((option) => (
+            {languageOptions.map((option) => (
               <button
                 key={option.id}
                 className={styles.languageButton}

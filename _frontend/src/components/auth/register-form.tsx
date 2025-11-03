@@ -23,7 +23,7 @@ export function RegisterForm() {
         if (password == confirmPassword) {
             
             try {
-                const result = await registerUser({userName, email, password})
+                await registerUser({userName, email, password})
                 router.push("/");
             } catch (error) {
              setError(error instanceof Error ? error.message: "No se pudo registrar");
