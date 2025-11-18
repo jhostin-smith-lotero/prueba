@@ -1,7 +1,21 @@
 "use client";
 
-import { LanguageProvider } from "@/context/languageContext";
+import { LanguageProvider, type Language } from "@/context/languageContext";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-  return <LanguageProvider>{children}</LanguageProvider>;
+type ProvidersProps = {
+  children: React.ReactNode;
+  initialLanguage?: Language;
+  userId?: string | null;
+};
+
+export default function Providers({
+  children,
+  initialLanguage,
+  userId,
+}: ProvidersProps) {
+  return (
+    <LanguageProvider initialLanguage={initialLanguage} userId={userId}>
+      {children}
+    </LanguageProvider>
+  );
 }
